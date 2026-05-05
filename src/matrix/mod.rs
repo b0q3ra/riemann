@@ -1,12 +1,16 @@
+pub mod ops;
 use std::fmt;
+use std::cmp;
 
 #[derive(Debug)]
+#[derive(Clone)]
 pub struct Matrix {
     data: Vec<f64>,
     cols: usize,
     rows: usize,
 }
 
+// Impl Matrix
 impl Matrix {
     // new matrix
     pub fn new(data: &[f64], rows: usize, cols: usize) -> Result<Self, String> {
@@ -19,6 +23,37 @@ impl Matrix {
             rows,
             cols,
         })
+    }
+
+    pub fn identity(rows: usize, cols: usize) -> Self {
+        let mut mat = Matrix::new(&vec![0.0; rows * cols], rows, cols).unwrap();
+        let diag_length = std::cmp::min(rows, cols);
+
+        for index in 0..diag_length {
+            mat.set_at(index, index, 1.0).unwrap();
+        }
+
+        return mat;
+
+    }
+
+    pub fn get_at(&self, row: usize, col: usize) -> Result<f64, String> {
+        if self.rows <= row || self.cols <= col {
+            return Err("Index out of bound".to_string());
+        }
+
+        Ok(
+            self.data[row * self.cols + col]
+        )
+    }
+
+    pub fn set_at(&mut self, row: usize, col: usize, value: f64) -> Result<(), String> {
+        if self.rows <= row || self.cols <= col {
+            return Err("Index out of bound".to_string());
+        }
+
+        self.data[row * self.cols + col] = value;
+        Ok(())
     }
 
     // scale row
@@ -50,8 +85,17 @@ impl Matrix {
             self.data.swap(a_start + c, b_start + c);
         }
     }
+
+    pub fn cols(&self) -> usize {
+        return self.cols;
+    }
+
+    pub fn rows(&self) -> usize {
+        return self.rows;
+    }
 }
 
+// Impl Display trait
 impl fmt::Display for Matrix {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for r in 0..self.rows {
